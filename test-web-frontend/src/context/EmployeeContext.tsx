@@ -1,42 +1,54 @@
-import React, { createContext, useState, useContext } from 'react';
-import api from '../services/Api';
-import type { Employee } from '../types/Employee';
+import { createContext, useContext, useState } from "react";
+import api from "../services/api";
+import type { Employee } from "../types/Employee";
+import type { EmployeeCreateRequest } from "../types/EmployeeCreateRequest";
 
-// 1. Definisi bentuk data yang akan dibagikan
-interface EmployeeContextType {
+type EmployeeContextType = {
   employees: Employee[];
   fetchEmployees: () => Promise<void>;
-}
+  createEmployee: (data: EmployeeCreateRequest) => Promise<void>;
+  updateEmployee: (id: number, data: EmployeeCreateRequest) => Promise<void>;
+  deleteEmployee: (id: number) => Promise<void>;
+};
 
-const EmployeeContext = createContext<EmployeeContextType | undefined>(undefined);
+const EmployeeContext = createContext<EmployeeContextType>({} as EmployeeContextType);
 
-// 2. Provider: Komponen yang akan membungkus aplikasi
 export const EmployeeProvider = ({ children }: { children: React.ReactNode }) => {
   const [employees, setEmployees] = useState<Employee[]>([]);
 
   const fetchEmployees = async () => {
-    try {
-      const res = await api.get('/employees');
-      // Pastikan backend mengembalikan array, jika tidak sesuaikan res.data
-      setEmployees(res.data);
-    } catch (err) {
-      console.error("Gagal mengambil data karyawan:", err);
-      throw err; // Lempar error agar ditangkap oleh hook useLoading
-    }
+    const res = await api.get("/employees");
+    setEmployees(res.data);
+  };
+
+  const createEmployee = async (data: EmployeeCreateRequest) => {
+    await api.post("/employees", data);
+    await fetchEmployees(); // 🔥 refresh otomatis
+  };
+
+  const updateEmployee = async (id: number, data: EmployeeCreateRequest) => {
+    await api.put(`/employees/${id}`, data);
+    await fetchEmployees();
+  };
+
+  const deleteEmployee = async (id: number) => {
+    await api.delete(`/employees/${id}`);
+    await fetchEmployees();
   };
 
   return (
-    <EmployeeContext.Provider value={{ employees, fetchEmployees }}>
+    <EmployeeContext.Provider
+      value={{
+        employees,
+        fetchEmployees,
+        createEmployee,
+        updateEmployee,
+        deleteEmployee,
+      }}
+    >
       {children}
     </EmployeeContext.Provider>
   );
 };
 
-// 3. Hook Custom: Agar panggil data di komponen tinggal satu baris
-export const useEmployeeContext = () => {
-  const context = useContext(EmployeeContext);
-  if (!context) {
-    throw new Error("useEmployeeContext harus digunakan di dalam EmployeeProvider");
-  }
-  return context;
-};
+export const useEmployeeContext = () => useContext(EmployeeContext);
