@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class PositionService {
-
     private final PositionRepository repo;
 
     public List<PositionResponseDTO> getAll() {

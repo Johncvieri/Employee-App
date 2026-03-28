@@ -7,7 +7,5 @@ import java.util.List;
 
 @Repository
 public interface PositionRepository extends JpaRepository<Position, Integer> {
-
     List<Position> findByIsDelete(Integer isDelete);
-
 }

@@ -18,28 +18,26 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-
                 .cors(cors -> cors.configurationSource(request -> {
                     var cfg = new org.springframework.web.cors.CorsConfiguration();
-                    cfg.setAllowedOrigins(java.util.List.of("http://localhost:5173")); // URL React
+                    cfg.setAllowedOrigins(java.util.List.of("http://localhost:5173"));
                     cfg.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                     cfg.setAllowedHeaders(java.util.List.of("*"));
                     cfg.setAllowCredentials(true);
                     return cfg;
                 }))
-                .csrf(csrf -> csrf.disable()) // Disable CSRF untuk mempermudah REST API testing
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/**").authenticated() // Semua API harus login
+                        .requestMatchers("/api/**").authenticated()
                         .anyRequest().permitAll()
                 )
-                .httpBasic(Customizer.withDefaults()); // Mengaktifkan Basic Auth (admin:admin123)
+                .httpBasic(Customizer.withDefaults());
 
         return http.build();
     }
 
     @Bean
     public UserDetailsService userDetailsService() {
-        // Menggunakan NoOpPasswordEncoder agar admin123 terbaca plain text untuk testing
         UserDetails user = User.withUsername("admin")
                 .password("{noop}admin123")
                 .roles("USER")

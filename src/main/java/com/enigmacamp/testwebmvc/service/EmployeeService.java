@@ -56,10 +56,8 @@ public class EmployeeService {
                 throw new ApiException("NIP sudah digunakan");
             }
         }
-
         Position position = positionRepository.findById(dto.getPositionId())
                 .orElseThrow(() -> new ApiException("Jabatan tidak ditemukan"));
-
         existing.setName(dto.getName());
         existing.setBirthDate(dto.getBirthDate());
         existing.setPosition(position);

@@ -10,7 +10,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/employees")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*") // Penting untuk koneksi ke React nanti
+@CrossOrigin(origins = "*")
 public class EmployeeController {
 
     private final EmployeeService service;
@@ -21,7 +21,6 @@ public class EmployeeController {
     }
 
     @PostMapping
-    // Sekarang menerima DTO, bukan Entity langsung (Clean Architecture)
     public EmployeeResponseDTO create(@RequestBody EmployeeRequestDTO dto) {
         return service.create(dto);
     }
