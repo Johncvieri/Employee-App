@@ -51,7 +51,7 @@ export const EmployeeProvider = ({
       await fetchEmployees();
     } catch (err: any) {
       setError(err.message);
-      throw err; // penting untuk UI
+      throw err;
     } finally {
       setLoading(false);
     }
