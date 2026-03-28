@@ -1,45 +1,96 @@
 import { createContext, useContext, useState } from "react";
-import api from "../services/api";
-import type { Employee } from "../types/Employee";
-import type { EmployeeCreateRequest } from "../types/EmployeeCreateRequest";
+import type { Employee, EmployeeRequest } from "../types/Employee";
+import {
+  getEmployees,
+  createEmployee as createEmp,
+  updateEmployee as updateEmp,
+  deleteEmployee as deleteEmp,
+} from "../services/EmployeeService";
 
 type EmployeeContextType = {
   employees: Employee[];
+  loading: boolean;
+  error: string;
   fetchEmployees: () => Promise<void>;
-  createEmployee: (data: EmployeeCreateRequest) => Promise<void>;
-  updateEmployee: (id: number, data: EmployeeCreateRequest) => Promise<void>;
+  createEmployee: (data: EmployeeRequest) => Promise<void>;
+  updateEmployee: (id: number, data: EmployeeRequest) => Promise<void>;
   deleteEmployee: (id: number) => Promise<void>;
 };
 
-const EmployeeContext = createContext<EmployeeContextType>({} as EmployeeContextType);
+const EmployeeContext = createContext<EmployeeContextType>(
+  {} as EmployeeContextType
+);
 
-export const EmployeeProvider = ({ children }: { children: React.ReactNode }) => {
+export const EmployeeProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const fetchEmployees = async () => {
-    const res = await api.get("/employees");
-    setEmployees(res.data);
+    setLoading(true);
+    setError("");
+    try {
+      const data = await getEmployees();
+      setEmployees(data);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const createEmployee = async (data: EmployeeCreateRequest) => {
-    await api.post("/employees", data);
-    await fetchEmployees(); // 🔥 refresh otomatis
+  const createEmployee = async (data: EmployeeRequest) => {
+    setLoading(true);
+    setError("");
+    try {
+      await createEmp(data);
+      await fetchEmployees();
+    } catch (err: any) {
+      setError(err.message);
+      throw err; // penting untuk UI
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const updateEmployee = async (id: number, data: EmployeeCreateRequest) => {
-    await api.put(`/employees/${id}`, data);
-    await fetchEmployees();
+  const updateEmployee = async (id: number, data: EmployeeRequest) => {
+    setLoading(true);
+    setError("");
+    try {
+      await updateEmp(id, data);
+      await fetchEmployees();
+    } catch (err: any) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
   };
 
   const deleteEmployee = async (id: number) => {
-    await api.delete(`/employees/${id}`);
-    await fetchEmployees();
+    setLoading(true);
+    setError("");
+    try {
+      await deleteEmp(id);
+      await fetchEmployees();
+    } catch (err: any) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <EmployeeContext.Provider
       value={{
         employees,
+        loading,
+        error,
         fetchEmployees,
         createEmployee,
         updateEmployee,
